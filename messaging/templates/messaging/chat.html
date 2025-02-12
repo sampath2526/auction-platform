@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Chat for Auction: {{ conversation.auction.title }}</h1>
+  <div id="chat-box" style="border:1px solid #ccc; padding:10px; height:300px; overflow-y:scroll;">
+    {% for message in messages %}
+      <p><strong>{{ message.sender.username }}:</strong> {{ message.content }}</p>
+    {% endfor %}
+  </div>
+  <form id="message-form">
+    {% csrf_token %}
+    <textarea id="message-input" placeholder="Type your message..." rows="3" style="width:100%;"></textarea>
+    <button type="submit">Send</button>
+  </form>
+
+  <script>
+    // Open a WebSocket connection to the chat consumer
+    const conversationId = "{{ conversation.id }}";
+    const socket = new WebSocket(`ws://${window.location.host}/ws/chat/${conversationId}/`);
+
+    socket.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerHTML += `<p><strong>${data.sender}:</strong> ${data.message}</p>`;
+      chatBox.scrollTop = chatBox.scrollHeight; // Auto scroll
+    };
+
+    document.getElementById('message-form').onsubmit = function(event) {
+      event.preventDefault();
+      const messageInput = document.getElementById('message-input');
+      const message = messageInput.value;
+      if (message.trim() !== "") {
+        socket.send(JSON.stringify({ 'message': message }));
+        messageInput.value = '';
+      }
+    };
+  </script>
+{% endblock %}

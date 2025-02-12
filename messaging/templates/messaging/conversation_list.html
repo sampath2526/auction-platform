@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Your Conversations</h1>
+<ul>
+    {% for conversation in conversations %}
+        <li>
+            <!-- Display the names of the other participants -->
+            Conversation with:
+            {% for user in conversation.participants.all %}
+                {% if user != request.user %}
+                    {{ user.username }}{% if not forloop.last %}, {% endif %}
+                {% endif %}
+            {% endfor %}
+            <!-- Link to view the conversation -->
+            <a href="{% url 'chat_view' conversation.id %}">View</a>
+            <!-- Delete Conversation (only for current user) -->
+            <form method="POST" action="{% url 'delete_conversation' conversation.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

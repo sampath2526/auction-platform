@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create Auction - Auction Platform{% endblock %}
+{% block content %}
+<div class="create-auction-container">
+  <h1>Create Auction</h1>
+  <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+          <label for="title">Title:</label>
+          <input type="text" name="title" id="title" required>
+      </div>
+      <div class="form-group">
+          <label for="description">Description:</label>
+          <textarea name="description" id="description" required></textarea>
+      </div>
+      <div class="form-group">
+          <label for="starting_bid">Starting Bid:</label>
+          <input type="number" name="starting_bid" id="starting_bid" step="0.01" required>
+      </div>
+      <div class="form-group">
+          <label for="end_time">End Time:</label>
+          <input type="datetime-local" name="end_time" id="end_time" required>
+      </div>
+      <div class="form-group">
+          <label for="category">Category:</label>
+          <select name="category" id="category" required>
+              <option value="electronics">Electronics</option>
+              <option value="furniture">Furniture</option>
+              <option value="art">Art</option>
+              <option value="fashion">Fashion</option>
+              <option value="vehicles">Vehicles</option>
+          </select>
+      </div>
+      <div class="form-group">
+          <label for="image">Upload Image:</label>
+          <input type="file" name="image" id="image" accept="image/*">
+      </div>
+      <button type="submit">Create</button>
+  </form>
+</div>
+{% endblock %}

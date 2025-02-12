@@ -1,0 +1,263 @@
+/* Import a modern Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* Define default (dark mode) variables */
+:root {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --header-bg: linear-gradient(90deg, #1f1c2c, #928dab);
+  --header-text: #ffffff;
+  --nav-bg: #1f1f1f;
+  --nav-link: #bb86fc;
+  --nav-link-hover: #03dac6;
+  --nav-button-bg: #03dac6;
+  --nav-button-hover: #018786;
+  --item-bg: #1e1e1e;
+  --item-border: #333;
+  --item-shadow: rgba(0,0,0,0.5);
+  --auction-title-link: #03dac6;
+  --form-input-bg: #2a2a2a;
+  --form-input-border: #444;
+  --form-input-text: #e0e0e0;
+  --button-bg: #bb86fc;
+  --button-hover: #3700b3;
+  --error-color: #cf6679;
+  --footer-bg: #1f1f1f;
+  --footer-text: #e0e0e0;
+  --footer-border: #333;
+}
+
+/* Define light mode variables (will be activated when .light-mode is applied to the body) */
+/* Define light mode variables (more colorful version) */
+.light-mode {
+  --bg-color: #ffffff;
+  --text-color: #222222;
+  --header-bg: linear-gradient(90deg, #ff9a8b, #ff6a88, #ff99ac);
+  --header-text: #ffffff;
+  --nav-bg: #ffebcc;
+  --nav-link: #ff5722;
+  --nav-link-hover: #d84315;
+  --nav-button-bg: linear-gradient(45deg, #ff6b6b, #ff8e53);
+  --nav-button-hover: linear-gradient(45deg, #ff3d3d, #ff5722);
+  --item-bg: #ffffff;
+  --item-border: #ffcc80;
+  --item-shadow: rgba(255, 87, 34, 0.2);
+  --auction-title-link: #ff4081;
+  --form-input-bg: #fffcf5;
+  --form-input-border: #ffcc80;
+  --form-input-text: #222222;
+  --button-bg: linear-gradient(45deg, #ff6b6b, #ff8e53);
+  --button-hover: linear-gradient(45deg, #ff3d3d, #ff5722);
+  --error-color: #d32f2f;
+  --footer-bg: #ffebcc;
+  --footer-text: #222222;
+  --footer-border: #ffcc80;
+}
+
+/* Global Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  padding-bottom: 80px; /* To avoid overlap with fixed footer */
+}
+
+/* Header Styles */
+header {
+  background: var(--header-bg);
+  color: var(--header-text);
+  padding: 1.5rem 0;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+header h1 {
+  font-size: 2.5rem;
+  letter-spacing: 2px;
+}
+
+/* Navigation Styles */
+nav {
+  background-color: var(--nav-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 2px solid var(--item-border);
+}
+
+nav a {
+  color: var(--nav-link);
+  text-decoration: none;
+  margin: 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: var(--nav-link-hover);
+}
+
+nav button {
+  background: var(--nav-button-bg);
+  border: none;
+  color: var(--bg-color); /* Contrast color */
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-left: 1rem; /* Space it from other nav items */
+}
+
+nav button:hover {
+  background: var(--nav-button-hover);
+}
+
+/* Main Content */
+main {
+  padding: 2rem;
+}
+
+/* Auction List Styles */
+.auction-list {
+  list-style: none;
+  padding: 0;
+}
+
+.auction-item {
+  background-color: var(--item-bg);
+  border: 1px solid var(--item-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px var(--item-shadow);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.auction-item:hover {
+  transform: translateY(-5px);
+}
+
+.auction-title a {
+  font-size: 1.5rem;
+  color: var(--auction-title-link);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.auction-title a:hover {
+  text-decoration: underline;
+}
+
+.auction-meta {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.auction-image {
+  max-width: 150px;
+  border-radius: 4px;
+  margin-right: 1rem;
+  border: 1px solid var(--item-border);
+}
+
+.no-image {
+  width: 150px;
+  height: 100px;
+  background-color: var(--item-border);
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.seller-info {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.current-bid,
+.remaining-time,
+.highest-bidder {
+  margin-top: 0.8rem;
+  font-size: 1.1rem;
+}
+
+/* Form Styles */
+form {
+  margin: 1.5rem 0;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"],
+textarea,
+select {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid var(--form-input-border);
+  border-radius: 4px;
+  background-color: var(--form-input-bg);
+  color: var(--form-input-text);
+  font-size: 1rem;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--button-bg);
+  color: var(--bg-color);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: var(--button-hover);
+}
+
+/* Error Message Styles */
+.error-message {
+  color: var(--error-color);
+  margin-top: 0.5rem;
+}
+
+/* Voice Assistant Styles */
+.voice-assistant {
+  margin-top: 1.5rem;
+}
+.voice-assistant button {
+  background: var(--nav-button-bg);
+}
+.voice-assistant button:hover {
+  background: var(--nav-button-hover);
+}
+
+/* Footer Styles */
+footer {
+  background-color: var(--footer-bg);
+  color: var(--footer-text);
+  text-align: center;
+  padding: 1rem;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  font-size: 0.9rem;
+  border-top: 1px solid var(--footer-border);
+}

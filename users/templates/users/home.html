@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Auction Platform</title>
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* In case you need some additional inline styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(90deg, #1f1c2c, #928dab);
+            color: #ffffff;
+            padding: 1.5rem 0;
+            text-align: center;
+        }
+        nav {
+            background-color: #1f1f1f;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav a {
+            color: #bb86fc;
+            margin: 0 1rem;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav a:hover {
+            color: #03dac6;
+        }
+        main {
+            padding: 2rem;
+            text-align: center;
+        }
+        footer {
+            background-color: #1f1f1f;
+            color: #e0e0e0;
+            text-align: center;
+            padding: 1rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Auction Platform!</h1>
+    </header>
+    <nav>
+       
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'register' %}">Register</a>
+        <a href="{% url 'auction_list' %}">Items</a>
+        <a href="{% url 'profile' %}">Profile</a>
+        <a href="{% url 'conversation_list' %}">Messages</a>
+    </nav>
+    <main>
+        <p>Discover amazing auctions and bid on your favorite items!</p>
+    </main>
+    <footer>
+        <p>&copy; {% now "Y" %} Auction Platform</p>
+    </footer>
+</body>
+</html>

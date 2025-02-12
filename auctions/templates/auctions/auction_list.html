@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Auction Items{% endblock %}
+
+{% block content %}
+<main class="auction-container">
+
+    <!-- Page Title -->
+    <header class="auction-header">
+        <h1>Live Auctions</h1>
+    </header>
+
+    <!-- Search Bar -->
+    <section class="search-section">
+        <form id="search-form" method="GET" action="{% url 'auction_list' %}" class="search-form">
+            <input type="text" id="search-bar" name="search" placeholder="Search auctions..."
+                   value="{{ request.GET.search|default:'' }}">
+            <button type="submit">Search</button>
+        </form>
+    </section>
+
+    <!-- Filters (Collapsible) -->
+    <section class="filter-section">
+        <details>
+            <summary>Filter Auctions</summary>
+            <form method="GET" action="{% url 'auction_list' %}" class="filter-form">
+                <div class="filter-group">
+                    <label for="min_price">Min Price:</label>
+                    <input type="number" id="min_price" name="min_price" value="{{ request.GET.min_price|default:'' }}">
+                </div>
+
+                <div class="filter-group">
+                    <label for="max_price">Max Price:</label>
+                    <input type="number" id="max_price" name="max_price" value="{{ request.GET.max_price|default:'' }}">
+                </div>
+
+                <div class="filter-group">
+                    <label for="category">Category:</label>
+                    <select id="category" name="category">
+                        <option value="">All</option>
+                        <option value="electronics" {% if request.GET.category == 'electronics' %}selected{% endif %}>Electronics</option>
+                        <option value="furniture" {% if request.GET.category == 'furniture' %}selected{% endif %}>Furniture</option>
+                        <option value="art" {% if request.GET.category == 'art' %}selected{% endif %}>Art</option>
+                        <option value="fashion" {% if request.GET.category == 'fashion' %}selected{% endif %}>Fashion</option>
+                        <option value="vehicles" {% if request.GET.category == 'vehicles' %}selected{% endif %}>Vehicles</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="status">Status:</label>
+                    <select id="status" name="status">
+                        <option value="">All</option>
+                        <option value="open" {% if request.GET.status == 'open' %}selected{% endif %}>Open</option>
+                        <option value="closed" {% if request.GET.status == 'closed' %}selected{% endif %}>Closed</option>
+                    </select>
+                </div>
+
+                <button type="submit">Apply Filters</button>
+            </form>
+        </details>
+    </section>
+
+    <!-- Auction List -->
+    <section class="auction-list-section">
+        <ul class="auction-list">
+            {% for auction in auctions %}
+            <li id="auction-{{ auction.id }}" class="auction-item">
+                
+                <!-- Auction Title (Link to Place Bid page) -->
+                <h2 class="auction-title">
+                    <a href="{% url 'place_bid' auction.id %}">{{ auction.title }}</a>
+                </h2>
+
+                <!-- Image & Seller -->
+                <div class="auction-meta">
+                    {% if auction.image %}
+                        <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="auction-image">
+                    {% else %}
+                        <div class="no-image">No image available</div>
+                    {% endif %}
+                    <p class="seller-info">Seller: {{ auction.created_by.username }}</p>
+                </div>
+
+                <!-- Bid Details -->
+                <div class="auction-details">
+                    <p class="current-bid">Current Bid: $<span class="bid-amount">{{ auction.current_bid }}</span></p>
+                    <p class="remaining-time">
+                        Time Left: 
+                        <span>
+                            {% if auction.remaining_days > 0 %}
+                                {{ auction.remaining_days }} days
+                            {% elif auction.remaining_hours > 0 %}
+                                {{ auction.remaining_hours }} hours
+                            {% else %}
+                                {{ auction.remaining_minutes }} minutes
+                            {% endif %}
+                        </span>
+                    </p>
+                    <p class="highest-bidder">
+                        Highest Bidder: 
+                        <span>
+                            {% if auction.highest_bidder %}
+                                {{ auction.highest_bidder.username }}
+                            {% else %}
+                                No bids yet
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
+            </li>
+            {% empty %}
+                <p>No auctions available at the moment.</p>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <!-- Action Buttons -->
+    <section class="action-buttons">
+        <a href="{% url 'create_auction' %}" class="create-auction-button">Create Auction</a>
+        <button id="start-voice" class="voice-button">🎙️ Voice Assistant</button>
+    </section>
+
+</main>
+
+<!-- WebSocket Connection -->
+<script>
+    const socket = new WebSocket(`ws://${window.location.host}/ws/auctions/`);
+
+    socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        if (data.auction_id && data.current_bid) {
+            const auctionElement = document.getElementById(`auction-${data.auction_id}`);
+            if (auctionElement) {
+                const bidElement = auctionElement.querySelector(".bid-amount");
+                if (bidElement) {
+                    bidElement.textContent = `${data.current_bid}`;
+                }
+            }
+        }
+    };
+</script>
+
+<!-- Voice Assistant -->
+<script>
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+
+    recognition.onresult = (event) => {
+        const command = event.results[0][0].transcript.toLowerCase();
+        const searchInput = document.getElementById("search-bar");
+        
+        if (command.includes("search for")) {
+            searchInput.value = command.replace("search for", "").trim();
+            document.getElementById("search-form").submit();
+        } else if (command.includes("go to home")) {
+            window.location.href = "{% url 'home' %}";
+        } else if (command.includes("go to items")) {
+            window.location.href = "{% url 'auction_list' %}";
+        } else if (command.includes("go to profile")) {
+            window.location.href = "{% url 'profile' %}";
+        } else {
+            alert("Command not recognized.");
+        }
+    };
+
+    document.getElementById("start-voice").addEventListener("click", () => recognition.start());
+</script>
+
+{% endblock %}

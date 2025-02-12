@@ -1,0 +1,6 @@
+{
+    "terminal.integrated.env.windows": {
+    "DJANGO_SETTINGS_MODULE": "auction_platform.settings"
+}
+
+}

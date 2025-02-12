@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Place Bid - Auction Platform{% endblock %}
+
+{% block content %}
+<div class="place-bid-container">
+  <h1>Place a Bid for {{ auction.title }}</h1>
+  
+  <!-- Auction Image -->
+  <div class="auction-image">
+    {% if auction.image %}
+      <img src="{{ auction.image.url }}" alt="{{ auction.title }}" style="max-width: 400px; height: auto;">
+    {% else %}
+      <p>No image available.</p>
+    {% endif %}
+  </div>
+  
+  <!-- Auction Description -->
+  <div class="auction-description">
+    <p><strong>Description:</strong></p>
+    <p>{{ auction.description }}</p>
+  </div>
+  
+  <!-- Auction Details -->
+  <div class="auction-details">
+    <p>Current Bid: <span id="current-bid">${{ auction.current_bid }}</span></p>
+    <p>Remaining Time: 
+      <span>
+        {% if auction.remaining_days > 0 %}
+          {{ auction.remaining_days }} days
+        {% elif auction.remaining_hours > 0 %}
+          {{ auction.remaining_hours }} hours
+        {% else %}
+          {{ auction.remaining_minutes }} minutes
+        {% endif %}
+      </span>
+    </p>
+    <p>Highest Bidder: 
+      <strong id="highest-bidder">
+        {% if auction.highest_bidder %}
+          {{ auction.highest_bidder.username }}
+        {% else %}
+          No bids yet
+        {% endif %}
+      </strong>
+    </p>
+  </div>
+  
+  <!-- Bookmark Button -->
+  <div class="bookmark-action">
+    <button onclick="toggleBookmark('{{ auction.id }}')">
+      {% if is_bookmarked %}
+        Remove Bookmark
+      {% else %}
+        Add Bookmark
+      {% endif %}
+    </button>
+  </div>
+  
+  <!-- Bid Form (Fallback) -->
+  <div class="bid-form">
+    <h2>Place Your Bid</h2>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="bid_amount">Your Bid:</label>
+        <input type="number" id="bid_amount" name="bid_amount" required placeholder="Enter a bid higher than ${{ auction.current_bid }}">
+      </div>
+      <button type="submit">Place Bid</button>
+    </form>
+    {% if error %}
+      <p class="error-message" style="color: red;">{{ error }}</p>
+    {% endif %}
+  </div>
+  
+  <!-- Voice Assistant -->
+  <div class="voice-assistant">
+    <button onclick="startVoiceRecognition()">🎤 Use Voice Commands</button>
+    <p id="voice-feedback" style="color: green; display: none;">Listening for commands...</p>
+  </div>
+  
+  <!-- WebSocket Connection Error -->
+  <div id="websocket-error" class="error-message" style="color: red; display: none;">
+    WebSocket connection failed. Using fallback form.
+  </div>
+</div>
+
+<script>
+  // Function to toggle bookmark status
+  function toggleBookmark(auctionId) {
+    fetch("{% url 'toggle_bookmark' auction.id %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json"
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert(data.status === "added" ? "Bookmarked!" : "Removed from bookmarks.");
+      location.reload();
+    });
+  }
+
+  // Variables for UI elements
+  const auctionId = "{{ auction.id }}";
+  const currentBidElement = document.getElementById("current-bid");
+  const highestBidderElement = document.getElementById("highest-bidder");
+  const bidInputElement = document.getElementById("bid_amount");
+  const form = document.querySelector("form");
+  const errorElement = document.getElementById("websocket-error");
+  const voiceFeedback = document.getElementById("voice-feedback");
+
+  // Set up WebSocket connection for real-time updates
+  const socket = new WebSocket(`ws://${window.location.host}/ws/auction/${auctionId}/`);
+  socket.onopen = function () {
+    console.log("WebSocket connection established.");
+  };
+  socket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    console.log("WebSocket message received:", data);
+    
+    // Update current bid if provided
+    if (data.bid) {
+      currentBidElement.textContent = `$${data.bid}`;
+      currentBidElement.style.color = "green";
+      setTimeout(() => { currentBidElement.style.color = ""; }, 1000);
+    }
+    
+    // Update highest bidder if provided (even if empty string)
+    if (data.highest_bidder !== undefined) {
+      highestBidderElement.textContent = data.highest_bidder ? data.highest_bidder : "No bids yet";
+    }
+  };
+  socket.onerror = function (error) {
+    console.error("WebSocket connection error:", error);
+    errorElement.style.display = "block";
+  };
+  socket.onclose = function () {
+    console.warn("WebSocket connection closed.");
+    errorElement.style.display = "block";
+  };
+
+  // Voice Assistant Functionality
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.onresult = (event) => {
+      const command = event.results[0][0].transcript.toLowerCase();
+      console.log(`Voice Command: ${command}`);
+      voiceFeedback.style.display = "none"; // Hide feedback after command
+      handleVoiceCommand(command);
+    };
+    
+    function startVoiceRecognition() {
+      recognition.start();
+      voiceFeedback.style.display = "block";
+      voiceFeedback.innerText = "Listening for commands...";
+    }
+    
+    function handleVoiceCommand(command) {
+      if (command.includes('place bid') || command.includes('bid')) {
+        const bidAmount = parseFloat(command.match(/\d+/)?.[0]);
+        if (isNaN(bidAmount)) {
+          alert("No valid bid amount recognized. Try saying 'Place bid [amount]'.");
+        } else {
+          console.log(`Placing bid: ${bidAmount}`);
+          placeBid(bidAmount);
+        }
+      } else if (command.includes('what is the current bid')) {
+        speak(`The current bid is ${currentBidElement.innerText}`);
+      } else {
+        alert("Command not recognized. Try 'Place bid [amount]' or 'What is the current bid'.");
+      }
+    }
+    
+    function placeBid(bidAmount) {
+      const currentBid = parseFloat(currentBidElement.textContent.replace('$', ''));
+      if (bidAmount <= currentBid) {
+        alert("Your bid must be higher than the current bid.");
+      } else {
+        // Send bid via WebSocket if available
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ bid: bidAmount }));
+          // Optionally update UI immediately (server will broadcast updated highest bidder)
+          currentBidElement.textContent = `$${bidAmount}`;
+          currentBidElement.style.color = "green";
+          setTimeout(() => { currentBidElement.style.color = ""; }, 1000);
+          speak(`Your bid of ${bidAmount} dollars has been placed.`);
+        } else {
+          form.submit(); // Fall back to form submission if WebSocket is not available
+        }
+      }
+    }
+    
+    function speak(message) {
+      const utterance = new SpeechSynthesisUtterance(message);
+      window.speechSynthesis.speak(utterance);
+    }
+  } else {
+    alert('Voice recognition is not supported in this browser.');
+  }
+</script>
+{% endblock %}

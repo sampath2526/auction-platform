@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Auction Platform{% endblock %}</title>
+    <!-- Link to the global CSS file -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <h1>Auction Platform</h1>
+    </header>
+    <nav>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'auction_list' %}">Items</a>
+        <a href="{% url 'profile' %}">Profile</a>
+        <a href="{% url 'conversation_list' %}">Messages</a>
+        <!-- Theme toggle button -->
+        <button id="theme-toggle">Toggle Theme</button>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; {% now "Y" %} Auction Platform</p>
+    </footer>
+
+    <!-- Theme Toggle Script -->
+    <script>
+        const toggleButton = document.getElementById('theme-toggle');
+        const body = document.body;
+      
+        // Check for saved theme in localStorage
+        if (localStorage.getItem('theme') === 'light') {
+            body.classList.add('light-mode');
+        }
+      
+        toggleButton.addEventListener('click', function() {
+            // Toggle the "light-mode" class on the <body>
+            body.classList.toggle('light-mode');
+      
+            // Save the preference in localStorage
+            if (body.classList.contains('light-mode')) {
+                localStorage.setItem('theme', 'light');
+            } else {
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+      </script>
+      
+</body>
+</html>

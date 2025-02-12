@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Profile - Auction Platform{% endblock %}
+{% block content %}
+<div class="profile-container">
+  <h1>Profile</h1>
+  <div class="profile-nav">
+    
+    <button onclick="startVoiceNavigation()">🎙️ Voice Command</button>
+  </div>
+  
+  <div class="profile-info">
+    <p><strong>Name:</strong> {{ request.user.username }}</p>
+    <p><strong>Email:</strong> {{ request.user.email }}</p>
+    <!-- Optionally remove phone and address if not needed -->
+  </div>
+  
+  <div class="profile-auctions">
+    <h2>Your Auction Items</h2>
+    <ul>
+      {% for auction in user_auctions %}
+        <li>{{ auction.title }} - Current Bid: ${{ auction.current_bid }}</li>
+      {% empty %}
+        <li>You have no auction items.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  
+  <div class="profile-bookmarks">
+    <h2>Bookmarked Auctions</h2>
+    <ul>
+      {% for auction in bookmarked_auctions %}
+        <li>
+          <a href="{% url 'place_bid' auction.id %}">{{ auction.title }}</a>
+          - Current Bid: ${{ auction.current_bid }}
+        </li>
+      {% empty %}
+        <li>No bookmarked auctions.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  
+  <div class="profile-logout">
+    <a href="{% url 'logout' %}">Logout</a>
+  </div>
+</div>
+<script>
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  
+  recognition.onresult = (event) => {
+      const command = event.results[0][0].transcript.toLowerCase();
+      if (command.includes("go to home")) {
+          window.location.href = "{% url 'home' %}";
+      } else if (command.includes("go to items")) {
+          window.location.href = "{% url 'auction_list' %}";
+      } else if (command.includes("go to profile")) {
+          window.location.href = "{% url 'profile' %}";
+      } else if (command.includes("go to messages")) {
+          window.location.href = "{% url 'conversation_list' %}";
+      } else if (command.includes("logout")) {
+          window.location.href = "{% url 'logout' %}";
+      } else {
+          alert("Command not recognized. Try 'Go to Home', 'Go to Items', 'Go to Profile', or 'Go to Messages'.");
+      }
+  };
+  
+  function startVoiceNavigation() {
+      recognition.start();
+  }
+</script>
+{% endblock %}
